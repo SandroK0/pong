@@ -1,3 +1,3 @@
 # Pong
 
-### Coded because out of boredom.
+### Coded out of boredom.
