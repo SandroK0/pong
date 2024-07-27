@@ -47,7 +47,6 @@ while running:
     player1 = pygame.Rect(player1_pos.x, player1_pos.y, 20, 100)
     player2 = pygame.Rect(player2_pos.x, player2_pos.y, 20, 100)
 
-    # line = pygame.Rect()
 
     # poll for events
     for event in pygame.event.get():
@@ -77,6 +76,8 @@ while running:
     # if keys[pygame.K_DOWN]:
     #     if not player2_pos.y + 100 >= SCREEN_HEIGHT:
     #         player2_pos.y += PLAYER_SPEED
+
+
 
     if ball_pos.y + 10 >= SCREEN_HEIGHT:
         ball_direction.y = -BALL_SPEED
@@ -122,7 +123,7 @@ while running:
     ball_pos.x += ball_direction.x
     ball_pos.y += ball_direction.y
 
-    #AI
+    #AI Xd
     if ball_pos.y not in range(int(player2_pos.y), int(player2_pos.y + 100))  and ball_direction.x > 0:
         if player2_pos.y + 50 < ball_pos.y and not player2_pos.y + 100 >= SCREEN_HEIGHT:
             player2_pos.y += PLAYER_SPEED
