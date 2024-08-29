@@ -70,6 +70,7 @@ while running:
     if keys[pygame.K_s]:
         if not player1_pos.y + 100 >= SCREEN_HEIGHT:
             player1_pos.y += PLAYER_SPEED
+    # Controls for second player
     # if keys[pygame.K_UP]:
     #     if not player2_pos.y <= 0:
     #         player2_pos.y -= PLAYER_SPEED
