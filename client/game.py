@@ -28,17 +28,34 @@ class Game:
         self.menu_btn = Button(SCREEN_WIDTH / 2 + 20, 20, 200, 50, "menu",
                                self.font, (0, 0, 0), (0, 0, 0), WHITE)
 
-    def update(self):
-        if self.mode == "1p":
-            self.handle_press_p1()
-            self.player2.ai_move(self.ball)
-        elif self.mode == "2p":
-            self.handle_press_p1()
-            self.handle_press_p2()
+
+
+    def single_player(self):
+        self.player1.handle_press()
+        self.player2.ai_move(self.ball)
 
         self.ball.update()
         self.collision_handler.check_collisions()
         self.check_goal()
+
+
+
+    def twp_player(self):
+        self.player1.handle_press()
+        self.player2.handle_press()
+
+        self.ball.update()
+        self.collision_handler.check_collisions()
+        self.check_goal()
+
+    def online_game(self):
+        pass
+
+    def update(self):
+        if self.mode == "1p":
+            self.single_player()
+        elif self.mode == "2p":
+            self.twp_player()
 
     def handle_events(self, event):
         if self.reset_btn.is_clicked(event):
@@ -76,20 +93,6 @@ class Game:
         if self.ball.pos.x < -20:
             self.player2_score += 1
             self.ball.reset(-1)
-
-    def handle_press_p1(self):
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_w] and self.player1.pos.y > 0:
-            self.player1.pos.y -= PLAYER_SPEED
-        if keys[pygame.K_s] and self.player1.pos.y + 100 < SCREEN_HEIGHT:
-            self.player1.pos.y += PLAYER_SPEED
-
-    def handle_press_p2(self):
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_UP] and self.player2.pos.y > 0:
-            self.player2.pos.y -= PLAYER_SPEED
-        if keys[pygame.K_DOWN] and self.player2.pos.y + 100 < SCREEN_HEIGHT:
-            self.player2.pos.y += PLAYER_SPEED
 
 
 class CollisionHandler:

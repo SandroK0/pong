@@ -5,7 +5,7 @@ from settings import SCREEN_WIDTH, SCREEN_HEIGHT, CLIENT_PORT
 import socket
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-sock.bind(("0.0.0.0", 5001))
+sock.bind(("0.0.0.0", 5002))
 
 
 def main():
