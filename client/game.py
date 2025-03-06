@@ -9,16 +9,18 @@ import json
 
 
 class Game:
-    def __init__(self, screen, menu):
+    def __init__(self, screen, menu, sock, is_host):
         self.screen = screen
+        self.is_host = is_host
         self.menu = menu
         self.mode = None  # "1p", "2p", "online"
         self.font = pygame.font.Font(None, 74)
-
-        self.player1 = LeftPlayer(screen)
-        self.player2 = RightPlayer(screen)
-        self.ball = Ball(screen)
-        self.collision_handler = CollisionHandler(self.ball, self.player1, self.player2)
+        self.sock = sock
+        self.player1 = LeftPlayer(screen, sock)
+        self.player2 = RightPlayer(screen, sock)
+        self.ball = Ball(screen, sock)
+        self.collision_handler = CollisionHandler(
+            self.ball, self.player1, self.player2)
 
         self.player1_score = 0
         self.player2_score = 0
@@ -28,8 +30,6 @@ class Game:
         self.menu_btn = Button(SCREEN_WIDTH / 2 + 20, 20, 200, 50, "menu",
                                self.font, (0, 0, 0), (0, 0, 0), WHITE)
 
-
-
     def single_player(self):
         self.player1.handle_press()
         self.player2.ai_move(self.ball)
@@ -37,8 +37,6 @@ class Game:
         self.ball.update()
         self.collision_handler.check_collisions()
         self.check_goal()
-
-
 
     def twp_player(self):
         self.player1.handle_press()
@@ -48,14 +46,32 @@ class Game:
         self.collision_handler.check_collisions()
         self.check_goal()
 
+    def handle_udp_packet(self, data, addr):
+        parsed_dict = json.loads(data) 
+
+        if self.is_host:
+            self.player2.set_pos(parsed_dict.get("right_player")[1])
+        else:
+            self.player1.set_pos(parsed_dict.get("left_player")[1])
+
+
+
     def online_game(self):
-        pass
+
+        if self.is_host:
+            self.player1.handle_press()
+            self.player1.send_pos_to_server()
+        else:
+            self.player2.handle_press()
+            self.player2.send_pos_to_server()
 
     def update(self):
         if self.mode == "1p":
             self.single_player()
         elif self.mode == "2p":
             self.twp_player()
+        elif self.mode == "online":
+            self.online_game()
 
     def handle_events(self, event):
         if self.reset_btn.is_clicked(event):
@@ -68,7 +84,8 @@ class Game:
         self.screen.fill("black")
         self.reset_btn.draw(self.screen)
         self.menu_btn.draw(self.screen)
-        pygame.draw.rect(self.screen, WHITE, (SCREEN_WIDTH / 2, 0, 10, SCREEN_HEIGHT), 0)
+        pygame.draw.rect(self.screen, WHITE,
+                         (SCREEN_WIDTH / 2, 0, 10, SCREEN_HEIGHT), 0)
 
         self.render_score()
         self.player1.render()
