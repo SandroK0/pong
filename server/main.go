@@ -1,11 +1,14 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"gameserver/event"
+	"gameserver/room"
 	"net"
 )
 
-var clients = make(map[string]net.Addr) // Stores two client addresses
+var manager = room.NewManager()
 
 func main() {
 	addr := ":5000"
@@ -20,30 +23,62 @@ func main() {
 
 	buffer := make([]byte, 1024)
 	for {
-		n, clientAddr, err := conn.ReadFrom(buffer)
+		n, ClientAddr, err := conn.ReadFrom(buffer)
 		if err != nil {
 			fmt.Println("Read error:", err)
 			continue
 		}
 
-		message := string(buffer[:n])
-		fmt.Printf("Received from %s: %s\n", clientAddr.String(), message)
+		fmt.Println(string(buffer[:n]))
 
-		// Store the client if it's new
-		if _, exists := clients[clientAddr.String()]; !exists {
-			clients[clientAddr.String()] = clientAddr
+		var baseEvent event.BaseEvent
+		err = json.Unmarshal([]byte(buffer[:n]), &baseEvent)
+		if err != nil {
+			fmt.Println("Error unmarshalling base event:", err)
 		}
 
-		// Forward the message to the other client
-		for addrStr, addr := range clients {
-			if addrStr != clientAddr.String() { // Send to the other client
-				_, err := conn.WriteTo([]byte(message), addr)
+		switch baseEvent.GetType() {
+		case "join":
+			var joinEvent event.JoinEvent
+
+			err := json.Unmarshal([]byte(buffer[:n]), &joinEvent)
+			if err != nil {
+				fmt.Println("Error unmarshalling join event:", err)
+			}
+
+			player := new(room.Player)
+			player.ClientAddr = ClientAddr
+
+			manager.AddPlayer(joinEvent.RoomID, player)
+
+		case "updatePlayerPos":
+			var UpdatePlayerPosEvent event.UpdatePlayerPosEvent
+
+			err := json.Unmarshal([]byte(buffer[:n]), &UpdatePlayerPosEvent)
+			if err != nil {
+				fmt.Println("Error unmarshalling join event:", err)
+			}
+
+			room, exists := manager.Rooms[UpdatePlayerPosEvent.RoomID]
+			if !exists {
+				fmt.Println("room not found:", UpdatePlayerPosEvent.RoomID)
+			}
+
+			if UpdatePlayerPosEvent.Player == "right_player" {
+
+				_, err := conn.WriteTo([]byte(buffer[:n]), room.LeftPlayer.ClientAddr)
 				if err != nil {
 					fmt.Println("Error forwarding message to", addr, ":", err)
-				} else {
-					fmt.Printf("Forwarded to %s\n", addr.String())
+				}
+
+			} else if UpdatePlayerPosEvent.Player == "left_player" {
+				_, err := conn.WriteTo([]byte(buffer[:n]), room.RightPlayer.ClientAddr)
+				if err != nil {
+					fmt.Println("Error forwarding message to", addr, ":", err)
 				}
 			}
+
 		}
+
 	}
 }

@@ -4,9 +4,16 @@ from game import Game
 from settings import SCREEN_WIDTH, SCREEN_HEIGHT, CLIENT_PORT
 import socket
 import threading
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--port", type=int, default=5001)
+args = parser.parse_args()
+
+print(f"Client running on port {args.port}")
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-sock.bind(("0.0.0.0", 5001))
+sock.bind(("0.0.0.0", args.port))
 
 # Function to handle UDP listening
 def udp_listener(game:Game):

@@ -2,11 +2,11 @@ from settings import PLAYER_SPEED, SCREEN_HEIGHT, WHITE, SCREEN_WIDTH, SERVER_AD
 import pygame
 from ball import Ball
 import json
-
+import socket
 
 class Player:
 
-    def __init__(self, screen, x_pos, sock) -> None:
+    def __init__(self, screen, x_pos, sock: socket) -> None:
         self.screen = screen
         self.pos = pygame.Vector2(x_pos, 300)
         self.sock = sock
@@ -57,12 +57,19 @@ class RightPlayer(Player):
         keys = pygame.key.get_pressed()
         if keys[pygame.K_UP] and self.pos.y > 0:
             self.pos.y -= PLAYER_SPEED
+            self.send_pos_to_server()
         if keys[pygame.K_DOWN] and self.pos.y + 100 < SCREEN_HEIGHT:
             self.pos.y += PLAYER_SPEED
+            self.send_pos_to_server()
 
     def send_pos_to_server(self):
+        # Adjusting the data to match the struct format
         data = {
-            "right_player": (self.pos.x, self.pos.y)
+            "type": "updatePlayerPos",
+            "room_id": "room123!",  # Replace with the actual room ID
+            "player": "right_player",  # Replace with the actual player name
+            "x": self.pos.x,
+            "y": self.pos.y
         }
 
         message = json.dumps(data).encode('utf-8')
@@ -78,13 +85,23 @@ class LeftPlayer(Player):
         keys = pygame.key.get_pressed()
         if keys[pygame.K_w] and self.pos.y > 0:
             self.pos.y -= PLAYER_SPEED
+            self.send_pos_to_server()
+
         if keys[pygame.K_s] and self.pos.y + 100 < SCREEN_HEIGHT:
             self.pos.y += PLAYER_SPEED
+            self.send_pos_to_server()
 
     def send_pos_to_server(self):
+        # Adjusting the data to match the struct format
         data = {
-            "left_player": (self.pos.x, self.pos.y)
+            "type": "updatePlayerPos",
+            "room_id": "room123!",  # Replace with the actual room ID
+            "player": "left_player",  # Replace with the actual player name
+            "x": self.pos.x,
+            "y": self.pos.y
         }
+
 
         message = json.dumps(data).encode('utf-8')
         self.sock.sendto(message, SERVER_ADDR)  # Replace with your server's IP and port
+

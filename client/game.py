@@ -29,6 +29,9 @@ class Game:
                                 self.font, (0, 0, 0), (0, 0, 0), WHITE)
         self.menu_btn = Button(SCREEN_WIDTH / 2 + 20, 20, 200, 50, "menu",
                                self.font, (0, 0, 0), (0, 0, 0), WHITE)
+        self.state = "paused"
+
+
 
     def single_player(self):
         self.player1.handle_press()
@@ -47,23 +50,34 @@ class Game:
         self.check_goal()
 
     def handle_udp_packet(self, data, addr):
-        parsed_dict = json.loads(data) 
+        parsed_dict = json.loads(data)
 
         if self.is_host:
-            self.player2.set_pos(parsed_dict.get("right_player")[1])
+            self.player2.set_pos(parsed_dict.get("y"))
         else:
-            self.player1.set_pos(parsed_dict.get("left_player")[1])
+            self.player1.set_pos(parsed_dict.get("y"))
 
+    def join(self):
 
+        join_event = {
+            "type": "join",
+            "room_id": "room123!",
+        }
+
+        message = json.dumps(join_event).encode('utf-8')
+        self.sock.sendto(message, SERVER_ADDR)
 
     def online_game(self):
 
+        if self.state == "paused":
+            self.join()
+        self.state = None
+
+
         if self.is_host:
             self.player1.handle_press()
-            self.player1.send_pos_to_server()
         else:
             self.player2.handle_press()
-            self.player2.send_pos_to_server()
 
     def update(self):
         if self.mode == "1p":

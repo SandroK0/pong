@@ -1,4 +1,4 @@
-package main
+package event
 
 // Event is an interface for all event types
 type Event interface {
@@ -17,9 +17,7 @@ func (e BaseEvent) GetType() string {
 // JoinEvent represents a join event
 type JoinEvent struct {
 	BaseEvent
-	User     string `json:"user"`
-	RoomID   string `json:"room_id"`
-	PlayerID int    `json:"player_id"`
+	RoomID string `json:"room_id"`
 }
 
 // LeftEvent represents a left event
@@ -42,10 +40,10 @@ type UpdateBallEvent struct {
 // UpdatePlayerPosEvent represents an update player position event
 type UpdatePlayerPosEvent struct {
 	BaseEvent
-	RoomID   string  `json:"room_id"`
-	PlayerID int     `json:"player_id"`
-	X        float64 `json:"x"`
-	Y        float64 `json:"y"`
+	RoomID string  `json:"room_id"`
+	Player string  `json:"player"`
+	X      float64 `json:"x"`
+	Y      float64 `json:"y"`
 }
 
 // UpdateScoreEvent represents an update score event
